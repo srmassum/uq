@@ -1,0 +1,39 @@
+# robots.txt — written for a deployment at the root of the domain.
+#
+# Read this first, because it is the one file here that cannot be made to work
+# everywhere. A crawler only ever asks for /robots.txt at the root of a host, so
+# a site served from a subdirectory cannot have one at all — this file does
+# nothing if the app lives at example.com/eq/. If it is deployed there rather
+# than at the root, delete this file and put the same content in the root
+# directory of the host, with the two paths below changed to /eq/sitemap.php and
+# /eq/.
+#
+# Everything a crawler should not read is already refused to everybody by the
+# .htaccess files in inc/, sql/, data/, uploads/, setup/ and admin/inc/. The
+# Disallow lines here are for the crawlers that do not read .htaccess, and for
+# directories that are reachable by design but are not pages — the panel, the
+# JSON endpoints, and the one-time installer.
+
+User-agent: *
+Allow: /
+
+# Nothing here is secret from a person who is meant to be here; it is simply not
+# a page. /admin/ is a login screen and a set of forms, /api/ answers only POSTs
+# and returns JSON, and /setup/ is a one-time installer that closes itself once
+# an administrator exists.
+Disallow: /admin/
+Disallow: /api/
+Disallow: /setup/
+
+# The trip page draws its list from the visitor's own browser, so a crawler would
+# see an empty page with a loading line on it. It says noindex itself as well;
+# this is for the crawlers that read robots.txt and nothing else.
+Disallow: /trip.php
+
+# Not disallowed, and worth saying why: /s.php carries a share link and the pages
+# behind them say noindex for themselves. Blocking them here would be worse than
+# leaving them, because a blocked URL that is linked from a hundred conversations
+# is a URL search engines keep discovering and cannot read — which reads as a
+# site full of broken links rather than as a site that chose not to publish them.
+
+Sitemap: /sitemap.php
