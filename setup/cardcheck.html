@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Share card check</title>
+<style>
+  :root { color-scheme: light; }
+  body {
+    margin: 0; padding: 28px 20px 80px;
+    font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: #f4f1ee; color: #241c1a;
+  }
+  h1 { font-size: 1.4rem; margin: 0 0 6px; }
+  .lede { color: #6b5f5c; margin: 0 0 22px; max-width: 70ch; }
+  .panel {
+    background: #fff; border: 1px solid #e2dad4; border-radius: 14px;
+    padding: 16px 18px; margin-block-end: 18px;
+  }
+  .row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+  label { display: inline-flex; gap: 7px; align-items: center; }
+  input[type=text] { padding: 7px 10px; border: 1px solid #d8cfc9; border-radius: 8px; min-inline-size: 260px; }
+  button { padding: 8px 14px; border: 1px solid #d8cfc9; border-radius: 9px; background: #fff; cursor: pointer; font: inherit; }
+  button.primary { background: #8b1538; border-color: #8b1538; color: #fff; }
+  .grid { display: grid; gap: 26px; }
+  .item { background: #fff; border: 1px solid #e2dad4; border-radius: 14px; padding: 14px; }
+  .item h2 { font-size: 1rem; margin: 0 0 10px; }
+  canvas { inline-size: 100%; block-size: auto; display: block; border-radius: 8px; }
+  pre {
+    margin: 12px 0 0; padding: 11px 13px; background: #241c1a; color: #f2ece7;
+    border-radius: 9px; font-size: 12.5px; line-height: 1.5; overflow: auto; white-space: pre-wrap;
+  }
+  .ok  { color: #1c7a3e; font-weight: 650; }
+  .bad { color: #b3122e; font-weight: 650; }
+  .err { background: #fff2f4; border-color: #f0c2cb; color: #8b1538; }
+</style>
+</head>
+<body>
+
+<h1>Share card check</h1>
+<p class="lede">
+  Draws the three card sizes with the real <code>assets/js/export.js</code>, then reads the
+  rendered pixels back to report exactly where the photo landed. No database, no login.
+  The test photo is four coloured quadrants with a bullseye, so a wrong crop or a wrong
+  position is obvious at a glance.
+</p>
+
+<div id="fatal" class="panel err" hidden></div>
+
+<div class="panel">
+  <div class="row">
+    <label>Name
+      <input type="text" id="name" value="SaieeD">
+    </label>
+    <label><input type="checkbox" id="photo" checked> draw a photo</label>
+    <label><input type="checkbox" id="rtl"> Arabic (RTL)</label>
+    <button class="primary" id="run">Redraw</button>
+    <button id="copy">Copy report</button>
+  </div>
+</div>
+
+<div class="grid" id="out"></div>
+
+<script src="../assets/js/export.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var SIZES = ['post', 'story', 'wide'];
+  var MARKERS = [
+    { name: 'magenta', rgb: [255, 0, 255] },
+    { name: 'cyan',    rgb: [0, 255, 255] },
+    { name: 'lime',    rgb: [0, 255, 0]   },
+    { name: 'yellow',  rgb: [255, 255, 0] }
+  ];
+
+  // The theme's two text colours. Nothing inside the test photo comes within
+  // 150 of either, so a hit here means something was painted over the photo.
+  var INK = [[36, 28, 26], [122, 106, 102]];
+
+  function nearInk(r, g, b) {
+    for (var i = 0; i < INK.length; i++) {
+      var k  = INK[i];
+      var dr = r - k[0], dg = g - k[1], db = b - k[2];
+      if (dr * dr + dg * dg + db * db < 70 * 70) return true;
+    }
+    return false;
+  }
+
+  // Close enough to a real theme to be representative; the marker colours are
+  // deliberately ones no theme would ever use.
+  var THEME = {
+    bg: '#fdf9f3', ink: '#241c1a', ink_soft: '#7a6a66',
+    visited: '#8b1538', land: '#e7ded7', accent: '#8b1538'
+  };
+
+  var geo = null, locs = null, photo = null;
+
+  /** Four quadrants plus a bullseye: tells us instantly if it is cropped, mirrored or squashed. */
+  function makePhoto() {
+    var s = 512;
+    var c = document.createElement('canvas');
+    c.width = c.height = s;
+    var x = c.getContext('2d');
+    var h = s / 2;
+
+    x.fillStyle = '#ff00ff'; x.fillRect(0, 0, h, h);       // top-left
+    x.fillStyle = '#00ffff'; x.fillRect(h, 0, h, h);       // top-right
+    x.fillStyle = '#00ff00'; x.fillRect(0, h, h, h);       // bottom-left
+    x.fillStyle = '#ffff00'; x.fillRect(h, h, h, h);       // bottom-right
+
+    x.strokeStyle = '#ffffff'; x.lineWidth = 10;
+    x.beginPath(); x.arc(h, h, h * 0.42, 0, Math.PI * 2); x.stroke();
+    x.beginPath(); x.arc(h, h, h * 0.16, 0, Math.PI * 2); x.stroke();
+    x.beginPath();
+    x.moveTo(h, 20); x.lineTo(h, s - 20);
+    x.moveTo(20, h); x.lineTo(s - 20, h);
+    x.stroke();
+
+    x.fillStyle = '#fff'; x.font = 'bold 46px sans-serif';
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.strokeStyle = '#ff8000'; x.lineWidth = 8;
+    x.strokeText('TOP', h, h * 0.30);
+    x.fillText('TOP', h, h * 0.30);
+
+    return c.toDataURL('image/png');
+  }
+
+  function loadImage(src) {
+    return new Promise(function (res, rej) {
+      var i = new Image();
+      i.onload = function () { res(i); };
+      i.onerror = function () { rej(new Error('image failed to load')); };
+      i.src = src;
+    });
+  }
+
+  /**
+   * Where did the photo actually land? Reads the pixels back and bounds every
+   * pixel that is exactly one of the marker colours.
+   */
+  function findPhoto(canvas) {
+    var ctx = canvas.getContext('2d');
+    var d = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+    var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity, hits = 0;
+    var per = {};
+
+    for (var i = 0; i < d.length; i += 4) {
+      var r = d[i], g = d[i + 1], b = d[i + 2];
+      var m = null;
+      for (var j = 0; j < MARKERS.length; j++) {
+        var k = MARKERS[j].rgb;
+        if (r === k[0] && g === k[1] && b === k[2]) { m = MARKERS[j].name; break; }
+      }
+      if (!m) continue;
+
+      per[m] = (per[m] || 0) + 1;
+      hits++;
+
+      var px = (i / 4) % canvas.width;
+      var py = Math.floor((i / 4) / canvas.width);
+      if (px < x0) x0 = px;
+      if (px > x1) x1 = px;
+      if (py < y0) y0 = py;
+      if (py > y1) y1 = py;
+    }
+
+    if (!hits) return { found: false, hits: 0 };
+
+    // Now the reverse question: is anything drawn ON TOP of the photo? Nothing
+    // in the test image comes near the theme's ink colours, so an ink-coloured
+    // pixel inside the disc can only be text or a rule crossing the face — the
+    // exact defect this card shipped with. Sampled to 0.94r so the antialiased
+    // clip edge, which blends photo into background, is excluded.
+    var rr  = (Math.max(x1 - x0 + 1, y1 - y0 + 1) / 2) * 0.94;
+    var ccx = (x0 + x1) / 2, ccy = (y0 + y1) / 2;
+    var bad = 0, disc = 0;
+
+    for (var qy = Math.max(0, Math.floor(ccy - rr)); qy <= Math.min(canvas.height - 1, Math.ceil(ccy + rr)); qy++) {
+      for (var qx = Math.max(0, Math.floor(ccx - rr)); qx <= Math.min(canvas.width - 1, Math.ceil(ccx + rr)); qx++) {
+        var dx = qx + 0.5 - ccx, dy = qy + 0.5 - ccy;
+        if (dx * dx + dy * dy > rr * rr) continue;
+        disc++;
+        var o = (qy * canvas.width + qx) * 4;
+        if (nearInk(d[o], d[o + 1], d[o + 2])) bad++;
+      }
+    }
+
+    return {
+      found: true,
+      hits: hits,
+      per: per,
+      bad: bad,
+      disc: disc,
+      x0: x0, y0: y0, x1: x1, y1: y1,
+      w: x1 - x0 + 1,
+      h: y1 - y0 + 1,
+      cx: (x0 + x1) / 2,
+      cy: (y0 + y1) / 2
+    };
+  }
+
+  function report(label, canvas, f) {
+    var W = canvas.width, H = canvas.height;
+    var lines = [];
+    lines.push(label.toUpperCase() + '  canvas ' + W + '×' + H +
+               '  (aspect ' + (W / H).toFixed(3) + ')');
+
+    if (!f.found) {
+      lines.push('  photo: NOT DRAWN — no marker pixel found anywhere on the card');
+      return lines.join('\n');
+    }
+
+    // A circle clipped out of a full square fills its bounding box completely,
+    // so the box is the avatar's true diameter. The accent ring is stroked just
+    // outside the circle, so it never eats into these marker pixels.
+    var dia = Math.max(f.w, f.h);
+    var expected = (label === 'story') ? H * 0.046 * 2
+                 : (label === 'post')  ? H * 0.065 * 2
+                 :                       H * 0.062 * 2;
+
+    lines.push('  photo: drawn');
+    lines.push('    bounds      x ' + f.x0 + '–' + f.x1 + '   y ' + f.y0 + '–' + f.y1);
+    lines.push('    diameter    ' + dia + 'px  (' + (dia / W * 100).toFixed(2) + '% of width, ' +
+               (dia / H * 100).toFixed(2) + '% of height)');
+    lines.push('    centre      ' + f.cx.toFixed(1) + ', ' + f.cy.toFixed(1) +
+               '  = ' + (f.cx / W).toFixed(3) + 'W, ' + (f.cy / H).toFixed(3) + 'H');
+    lines.push('    expected    ' + expected.toFixed(1) + 'px diameter, centred on the name row');
+    lines.push('    quadrants   ' + Object.keys(f.per).map(function (k) {
+      return k + ' ' + f.per[k];
+    }).join(', '));
+
+    var share = f.disc ? (f.bad / f.disc * 100) : 0;
+    lines.push('    overlap     ' + f.bad + ' ink px inside the photo (' +
+               share.toFixed(2) + '% of its area) ' +
+               (f.bad > f.disc * 0.002
+                  ? '<-- TEXT OR A RULE IS DRAWN ACROSS THE PHOTO'
+                  : '- clear, nothing printed over it'));
+
+    if (Object.keys(f.per).length < 4) {
+      lines.push('    NOTE        only ' + Object.keys(f.per).length +
+                 ' of 4 quadrants visible — the photo is being cropped hard');
+    }
+
+    return lines.join('\n');
+  }
+
+  function draw() {
+    var out = document.getElementById('out');
+    out.innerHTML = '';
+
+    var name  = document.getElementById('name').value;
+    var rtl   = document.getElementById('rtl').checked;
+    var wantP = document.getElementById('photo').checked;
+
+    window.QCard.init({
+      rtl: rtl,
+      lang: rtl ? 'ar' : 'en',
+      strings: {
+        brand: 'Qatar Unseen',
+        card_pct: ':pct% of Qatar visited',
+        card_credit: 'Boundaries © simplemaps.com',
+        anon_name: 'A Qatar resident'
+      }
+    });
+
+    var places = locs.slice(0, Math.round(locs.length * 0.48)).map(function (l) { return l.slug; });
+    var map = {
+      geo: geo,
+      localities: locs,
+      state: { places: new Set(places), regions: new Set(['QADA', 'QAWA', 'QARA']), theme: 'x' },
+      theme: function () { return THEME; }
+    };
+
+    var report_text = [];
+
+    SIZES.forEach(function (key) {
+      var item = document.createElement('div');
+      item.className = 'item';
+
+      var h = document.createElement('h2');
+      h.textContent = key + ' · ' + window.QCard.SIZES[key].w + '×' + window.QCard.SIZES[key].h;
+      item.appendChild(h);
+
+      var canvas = document.createElement('canvas');
+      item.appendChild(canvas);
+      out.appendChild(item);
+
+      window.QCard.draw(canvas, key, map, {
+        theme: THEME,
+        name: name,
+        photo: wantP ? photo : null,
+        subtitle: 'Explorer · Pathfinder'
+      });
+
+      var f = findPhoto(canvas);
+      var text = report(key, canvas, f);
+
+      var pre = document.createElement('pre');
+      pre.textContent = text;
+      item.appendChild(pre);
+
+      report_text.push(text);
+    });
+
+    document.body.setAttribute('data-report', report_text.join('\n\n'));
+    window.__report = report_text.join('\n\n');
+  }
+
+  document.getElementById('run').addEventListener('click', draw);
+  document.getElementById('copy').addEventListener('click', function () {
+    var btn = this;
+    var t = window.__report || '';
+    navigator.clipboard.writeText(t).then(function () {
+      btn.textContent = 'Copied';
+      setTimeout(function () { btn.textContent = 'Copy report'; }, 1600);
+    }, function () {
+      btn.textContent = 'Select the text and copy';
+    });
+  });
+  document.getElementById('photo').addEventListener('change', draw);
+  document.getElementById('rtl').addEventListener('change', draw);
+
+  function fail(msg) {
+    var box = document.getElementById('fatal');
+    box.hidden = false;
+    box.textContent = msg;
+  }
+
+  Promise.all([
+    fetch('../assets/data/geo.json').then(function (r) { return r.json(); }),
+    fetch('../assets/data/localities.json').then(function (r) { return r.json(); }),
+    loadImage(makePhoto())
+  ]).then(function (res) {
+    geo = res[0];
+    locs = res[1];
+    photo = res[2];
+    draw();
+  }).catch(function (e) {
+    fail('Could not start: ' + e.message +
+         ' — check that assets/data/geo.json and assets/data/localities.json are reachable.');
+  });
+})();
+</script>
+</body>
+</html>

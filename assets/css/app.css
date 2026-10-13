@@ -1,0 +1,954 @@
+/* ==========================================================================
+   Qatar Unseen — styles
+
+   Layout uses CSS logical properties (margin-inline-start, padding-block, …)
+   throughout, so switching to Arabic with dir="rtl" mirrors the whole page
+   without a single RTL-specific override.
+   ========================================================================== */
+
+/* --- tokens ------------------------------------------------------------- */
+:root {
+  --bg:        #fbfaf9;
+  --surface:   #ffffff;
+  --surface-2: #f5f4f2;
+  --ink:       #1c1917;
+  --ink-soft:  #78716c;
+  --ink-faint: #a8a29e;
+  --line:      #e7e5e4;
+  --line-soft: #f0efed;
+  --brand:     #8b1538;
+  --brand-ink: #ffffff;
+  --brand-soft:#fdf2f5;
+  --ok:        #15803d;
+  --warn:      #b45309;
+
+  --r-sm: 8px;
+  --r:    12px;
+  --r-lg: 18px;
+  --r-xl: 26px;
+
+  --shadow-1: 0 1px 2px rgb(28 25 23 / .06), 0 1px 3px rgb(28 25 23 / .04);
+  --shadow-2: 0 4px 12px rgb(28 25 23 / .07), 0 1px 3px rgb(28 25 23 / .05);
+  --shadow-3: 0 18px 40px rgb(28 25 23 / .13), 0 4px 12px rgb(28 25 23 / .07);
+
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-ar: "Noto Kufi Arabic", "Inter", system-ui, sans-serif;
+
+  --topbar-h: 62px;
+  --wrap: 1240px;
+}
+
+:root[data-theme="dark"] {
+  --bg:        #0c0a09;
+  --surface:   #1a1715;
+  --surface-2: #232020;
+  --ink:       #fafaf9;
+  --ink-soft:  #a8a29e;
+  --ink-faint: #78716c;
+  --line:      #2e2a28;
+  --line-soft: #232020;
+  --brand:     #c2415f;
+  --brand-soft:#2a1419;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / .4);
+  --shadow-2: 0 4px 14px rgb(0 0 0 / .45);
+  --shadow-3: 0 18px 44px rgb(0 0 0 / .55);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:        #0c0a09;
+    --surface:   #1a1715;
+    --surface-2: #232020;
+    --ink:       #fafaf9;
+    --ink-soft:  #a8a29e;
+    --ink-faint: #78716c;
+    --line:      #2e2a28;
+    --line-soft: #232020;
+    --brand:     #c2415f;
+    --brand-soft:#2a1419;
+  }
+}
+
+/* --- reset -------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+body {
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html[dir="rtl"] body { font-family: var(--font-ar); line-height: 1.75; }
+
+img, svg, canvas { display: block; max-width: 100%; }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* --- primitives --------------------------------------------------------- */
+.wrap   { max-width: var(--wrap); margin-inline: auto; padding-inline: 20px; }
+.wrap.narrow { max-width: 720px; }
+.muted  { color: var(--ink-soft); }
+.lede   { font-size: 1.125rem; color: var(--ink-soft); }
+.sr     { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden;
+          clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+h1, h2, h3 { line-height: 1.2; letter-spacing: -0.02em; font-weight: 650; }
+html[dir="rtl"] h1, html[dir="rtl"] h2, html[dir="rtl"] h3 { letter-spacing: 0; line-height: 1.35; }
+
+h1 { font-size: clamp(1.9rem, 4.2vw, 3rem); }
+h2 { font-size: clamp(1.35rem, 2.4vw, 1.75rem); }
+h3 { font-size: 1.0625rem; }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 22px;
+  box-shadow: var(--shadow-1);
+}
+
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 10px; border-radius: 99px;
+  font-size: .75rem; font-weight: 550; letter-spacing: .01em;
+  background: var(--surface-2); color: var(--ink-soft);
+  border: 1px solid var(--line);
+  white-space: nowrap;
+}
+.pill.brand { background: var(--brand-soft); color: var(--brand); border-color: transparent; }
+.pill.ok    { background: color-mix(in srgb, var(--ok) 12%, transparent); color: var(--ok); border-color: transparent; }
+
+/* --- buttons ------------------------------------------------------------ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 11px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 550; font-size: .9375rem;
+  cursor: pointer;
+  transition: background .14s ease, border-color .14s ease, transform .1s ease, box-shadow .14s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--surface-2); }
+.btn:active { transform: translateY(1px); }
+.btn[disabled], .btn[aria-disabled="true"] { opacity: .5; pointer-events: none; }
+
+.btn.primary {
+  background: var(--brand); border-color: var(--brand); color: var(--brand-ink);
+  box-shadow: var(--shadow-2);
+}
+.btn.primary:hover { background: color-mix(in srgb, var(--brand) 88%, black); }
+
+.btn.ghost { background: transparent; border-color: transparent; color: var(--ink-soft); }
+.btn.ghost:hover { background: var(--surface-2); color: var(--ink); }
+
+.btn.sm { padding: 7px 12px; font-size: .875rem; border-radius: var(--r-sm); }
+.btn.block { width: 100%; }
+.btn.danger { color: var(--brand); }
+.btn.danger:hover { background: var(--brand-soft); color: var(--brand); }
+
+/* --- topbar ------------------------------------------------------------- */
+.topbar {
+  position: sticky; inset-block-start: 0; z-index: 60;
+  display: flex; align-items: center; gap: 18px;
+  block-size: var(--topbar-h);
+  padding-inline: 20px;
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  backdrop-filter: saturate(1.7) blur(14px);
+  border-block-end: 1px solid var(--line);
+}
+
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 650; }
+.brand-mark {
+  inline-size: 26px; block-size: 26px; border-radius: 7px;
+  background: var(--brand);
+  position: relative;
+  flex: none;
+}
+.brand-mark::after {
+  content: ""; position: absolute; inset: 7px 7px 7px 7px;
+  border-radius: 2px;
+  background: linear-gradient(160deg, #fff 0 45%, transparent 45%);
+}
+.brand-name { font-size: 1rem; letter-spacing: -0.01em; }
+
+/* Five links no longer fit beside the brand at 375px. Rather than dropping one,
+   or letting the row push the language switch off the edge, the row scrolls —
+   with the scrollbar hidden, because a visible one inside a 62px sticky header
+   reads as a rendering fault rather than as a control. min-inline-size:0 is what
+   actually lets a flex item shrink below its content width so that the overflow
+   happens here instead of out of the viewport. */
+.topnav {
+  display: flex; gap: 4px; margin-inline-start: 10px;
+  min-inline-size: 0; overflow-x: auto;
+  scrollbar-width: none; -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+.topnav::-webkit-scrollbar { display: none; }
+.topnav a {
+  flex: none;
+  padding: 7px 12px; border-radius: var(--r-sm);
+  text-decoration: none; font-size: .9375rem; color: var(--ink-soft);
+  transition: background .14s, color .14s;
+}
+.topnav a:hover { background: var(--surface-2); color: var(--ink); }
+.topnav a[aria-current="page"] { color: var(--ink); font-weight: 550; background: var(--surface-2); }
+
+.langsw { margin-inline-start: auto; display: flex; gap: 2px; padding: 3px; background: var(--surface-2); border-radius: 99px; }
+.langsw a {
+  padding: 5px 12px; border-radius: 99px; text-decoration: none;
+  font-size: .8125rem; color: var(--ink-soft); transition: background .14s, color .14s;
+}
+.langsw a.on { background: var(--surface); color: var(--ink); font-weight: 550; box-shadow: var(--shadow-1); }
+
+/* The light/dark switch. It ships hidden and is revealed by theme.js, because
+   without JavaScript it cannot do anything — and a control that does nothing is
+   worse than no control. Which icon shows is set from data-mode, the same value
+   the script writes the label from, so the two can never disagree. */
+.theme-btn {
+  display: flex; align-items: center; justify-content: center;
+  inline-size: 34px; block-size: 34px; padding: 0; flex: none;
+  border: 1px solid var(--line); border-radius: 99px;
+  background: var(--surface); color: var(--ink-soft);
+  cursor: pointer;
+  transition: color .14s, background .14s, border-color .14s;
+}
+.theme-btn:hover { color: var(--ink); background: var(--surface-2); border-color: var(--ink-faint); }
+.theme-btn .theme-ico { display: none; }
+.theme-btn[data-mode="dark"]  .theme-ico.sun  { display: block; }
+.theme-btn[data-mode="light"] .theme-ico.moon { display: block; }
+
+@media (max-width: 720px) {
+  .brand-name { display: none; }
+  .topnav a { padding: 7px 9px; font-size: .875rem; }
+}
+
+/* --- hero --------------------------------------------------------------- */
+.hero { padding-block: 72px 56px; text-align: center; }
+.hero.compact { padding-block: 40px 30px; text-align: start; }
+.hero .eyebrow { margin-block-end: 18px; }
+.hero h1 { max-width: 16ch; margin-inline: auto; }
+.hero.compact h1 { margin-inline: 0; }
+.hero .lede { max-width: 54ch; margin: 18px auto 0; }
+.hero.compact .lede { margin-inline: 0; }
+.hero-actions { display: flex; gap: 10px; justify-content: center; margin-block-start: 28px; flex-wrap: wrap; }
+
+/* Badges / personality / share sit under the builder rather than beside it, so
+   the map keeps its room on a laptop and the cards get a wide grid on mobile. */
+.extras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  gap: 20px;
+  padding-block-end: 64px;
+  align-items: start;
+}
+
+/* --- map builder -------------------------------------------------------- */
+.builder {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
+  gap: 26px;
+  align-items: start;
+  padding-block-end: 64px;
+}
+
+/* The card preview lives in the sidebar, so the whole 1080px card is drawn at
+   roughly a third of its size there and the byline photo reads as a smudge.
+   On a wide screen there is room to give the column more width without
+   squeezing the map, which is the point of the page. */
+@media (min-width: 1200px) {
+  .builder { grid-template-columns: minmax(0, 1fr) minmax(360px, 512px); }
+}
+@media (max-width: 980px) {
+  .builder { grid-template-columns: 1fr; }
+}
+
+.map-stage {
+  position: sticky; inset-block-start: calc(var(--topbar-h) + 20px);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  padding: 18px;
+  box-shadow: var(--shadow-2);
+}
+@media (max-width: 980px) { .map-stage { position: static; } }
+
+/* The map is a picture. Its colours come from the card theme in the database,
+   not from the page, and it is the same picture the visitor exports — so the
+   frame carries its own light surface in both site themes rather than following
+   them. That matters beyond the land itself: the gaps between municipalities,
+   the middle of every locality dot and the halo behind each label are all drawn
+   in --surface so they match the land they sit on, and inverting the page under
+   a map that did not invert would leave every one of them the wrong colour. The
+   search box and the buttons below are siblings, so they still follow the page. */
+.map-frame {
+  position: relative;
+  --surface: #ffffff;
+  background: var(--surface);
+  border-radius: var(--r-lg);
+}
+.map-frame svg { inline-size: 100%; block-size: auto; touch-action: none; cursor: grab; }
+.map-frame svg.dragging { cursor: grabbing; }
+
+/* Dot radius is a CSS geometry property driven by --dot-r, which map.js
+   rewrites on zoom so dots keep a constant on-screen size instead of
+   ballooning to blobs at 9x. */
+.map-frame svg { --dot-r: 5.5px; --dot-sw: 2.2px; --lbl-fs: 13px; --lbl-sw: 3px; }
+
+.mun-path {
+  fill: var(--m-land, #e7e2df);
+  stroke: var(--surface);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  transition: fill .22s ease;
+  cursor: pointer;
+}
+.mun-path:hover { fill: var(--m-hover, #d9d3ce); }
+.mun-path.on { fill: var(--m-on, #8b1538); }
+
+.mun-label {
+  font-size: var(--lbl-fs);
+  font-weight: 600;
+  fill: var(--m-label, #57534e);
+  paint-order: stroke;
+  stroke: var(--surface); stroke-width: var(--lbl-sw); stroke-linejoin: round;
+  pointer-events: none;
+  transition: fill .22s ease;
+}
+.mun-label.on { fill: #fff; stroke: color-mix(in srgb, var(--m-on, #8b1538) 85%, transparent); }
+
+.loc-dot {
+  r: var(--dot-r);
+  fill: var(--surface);
+  stroke: var(--m-on, #8b1538);
+  stroke-width: var(--dot-sw);
+  cursor: pointer;
+  transition: r .16s ease, fill .16s ease;
+}
+.loc-dot:hover { r: calc(var(--dot-r) * 1.55); }
+.loc-dot.on { fill: var(--m-on, #8b1538); stroke: #fff; stroke-width: calc(var(--dot-sw) * .8); }
+.loc-dot.hidden { display: none; }
+.loc-dot.dim { opacity: .18; }
+
+/* Invisible fat disc behind each dot so the tap target is finger-sized even
+   when the visible dot is 5px across. */
+.loc-hit { fill: transparent; r: calc(var(--dot-r) * 2.6); cursor: pointer; }
+.loc-hit.hidden { display: none; }
+
+.map-tools {
+  display: flex; gap: 8px; align-items: center;
+  margin-block-start: 14px; padding-block-start: 14px;
+  border-block-start: 1px solid var(--line-soft);
+  flex-wrap: wrap;
+}
+.map-tools .grow { flex: 1 1 auto; }
+.map-hint { font-size: .8125rem; color: var(--ink-faint); }
+
+/* counter */
+.counter { display: flex; align-items: baseline; gap: 10px; }
+.counter .big { font-size: 2rem; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.counter .of  { color: var(--ink-faint); font-size: 1rem; }
+/* An auto margin parks the share at the far end of the row, so it lands on the
+   right in English and the left in Arabic without a direction-specific rule. */
+.counter .pct { margin-inline-start: auto; font-size: 1.0625rem; font-weight: 650; color: var(--brand); font-variant-numeric: tabular-nums; }
+
+.bar { block-size: 7px; border-radius: 99px; background: var(--surface-2); overflow: hidden; margin-block-start: 10px; }
+.bar > i { display: block; block-size: 100%; background: var(--brand); border-radius: 99px; transition: inline-size .3s ease; }
+
+/* checklist */
+.map-side { display: grid; gap: 20px; align-content: start; }
+
+.panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-block-end: 14px;
+}
+.panel-head h2 { font-size: 1.0625rem; }
+
+.search {
+  inline-size: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--line); border-radius: var(--r);
+  background: var(--surface);
+  margin-block-end: 14px;
+}
+.search::placeholder { color: var(--ink-faint); }
+
+.mun-group { border-block-end: 1px solid var(--line-soft); }
+.mun-group:last-child { border-block-end: 0; }
+
+/* The UA stylesheet's `[hidden] { display: none }` loses to any author rule
+   that sets a display — and .btn, .pill, .loc-row and .mun-group all do. That
+   silently un-hides anything hidden in the markup, which is how a hidden button
+   on the places page ended up visible. One rule with !important settles it for
+   every element, present and future, instead of a list that drifts. */
+[hidden] { display: none !important; }
+
+.mun-head {
+  display: flex; align-items: center; gap: 8px;
+  inline-size: 100%;
+  padding: 9px 6px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  text-align: start;
+  user-select: none;
+}
+.mun-head:hover { background: var(--surface-2); }
+.mun-head:hover .nm { color: var(--brand); }
+.mun-head .swatch { inline-size: 11px; block-size: 11px; border-radius: 3px; background: var(--line); flex: none; }
+.mun-head .swatch.on { background: var(--brand); }
+.mun-head .nm { font-weight: 550; font-size: .9375rem; }
+.mun-head .count { margin-inline-start: auto; font-size: .8125rem; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+
+.fold-btn {
+  background: none; border: 0; cursor: pointer; padding: 3px 7px;
+  border-radius: 6px; line-height: 1; color: var(--ink-faint); font-size: .7rem;
+}
+.fold-btn:hover { background: var(--line); color: var(--ink); }
+.fold-btn .chev { display: block; transition: transform .18s ease; }
+.mun-group[data-open="0"] .fold-btn .chev { transform: rotate(-90deg); }
+html[dir="rtl"] .mun-group[data-open="0"] .fold-btn .chev { transform: rotate(90deg); }
+
+.mun-body { padding-block-end: 8px; }
+.mun-group[data-open="0"] .mun-body { display: none; }
+
+/* "Mark all 12 in Ad Dawhah" — the one bulk action inside a group. */
+.mark-all {
+  display: flex; align-items: center; gap: 9px;
+  inline-size: calc(100% - 25px);
+  margin-inline-start: 25px;
+  padding: 6px 8px;
+  border: 1px dashed var(--line);
+  border-radius: var(--r-sm);
+  background: none; cursor: pointer;
+  font-size: .8125rem; color: var(--ink-soft);
+  text-align: start;
+  margin-block-end: 6px;
+}
+html[dir="rtl"] .mark-all { margin-inline-start: 25px; }
+.mark-all:hover { border-color: var(--brand); color: var(--brand); border-style: solid; }
+
+.loc-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 4px 7px 25px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  font-size: .9375rem;
+}
+html[dir="rtl"] .loc-row { padding: 7px 25px 7px 4px; }
+.loc-row:hover { background: var(--surface-2); }
+.loc-row[aria-checked="true"] .nm { color: var(--brand); font-weight: 550; }
+
+.tick {
+  inline-size: 17px; block-size: 17px; flex: none;
+  border: 1.5px solid var(--line); border-radius: 5px;
+  display: grid; place-items: center;
+  background: var(--surface);
+}
+.loc-row[aria-checked="true"] .tick { background: var(--brand); border-color: var(--brand); }
+.loc-row[aria-checked="true"] .tick::after {
+  content: ""; inline-size: 9px; block-size: 5px;
+  border: 2px solid #fff; border-block-start: 0; border-inline-end: 0;
+  transform: rotate(-45deg) translate(0.5px, -1px);
+}
+.loc-row .nm { flex: 1 1 auto; }
+.loc-row .kh { font-size: .6875rem; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .06em; }
+
+/* tiers */
+.tiers { display: flex; flex-direction: column; gap: 8px; margin-block-start: 6px; }
+
+/* --- badges ------------------------------------------------------------- */
+.badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 10px; }
+
+.badge {
+  text-align: center; padding: 12px 6px;
+  border-radius: var(--r); border: 1px solid var(--line);
+  background: var(--surface-2);
+  opacity: .48; filter: grayscale(1);
+  transition: opacity .2s, filter .2s, border-color .2s, background .2s;
+}
+.badge.on {
+  opacity: 1; filter: none;
+  background: var(--surface);
+  border-color: color-mix(in srgb, var(--brand) 35%, var(--line));
+}
+.badge .ico { font-size: 1.5rem; line-height: 1; }
+.badge .nm  { font-size: .6875rem; margin-block-start: 6px; line-height: 1.3; color: var(--ink-soft); }
+.badge.on .nm { color: var(--ink); font-weight: 550; }
+
+/* --- personality -------------------------------------------------------- */
+.persona {
+  display: flex; gap: 14px; align-items: center;
+  padding: 16px; border-radius: var(--r);
+  background: var(--brand-soft);
+  border: 1px solid color-mix(in srgb, var(--brand) 20%, transparent);
+}
+.persona .glyph { font-size: 1.9rem; line-height: 1; }
+.persona .nm { font-weight: 650; font-size: 1.0625rem; color: var(--brand); }
+.persona .bl { font-size: .875rem; color: var(--ink-soft); }
+
+/* --- share panel -------------------------------------------------------- */
+.field { margin-block-end: 16px; }
+.field > label, .field > .lbl {
+  display: block; font-size: .8125rem; font-weight: 550;
+  color: var(--ink-soft); margin-block-end: 7px;
+}
+.text-in {
+  inline-size: 100%; padding: 10px 13px;
+  border: 1px solid var(--line); border-radius: var(--r);
+  background: var(--surface);
+}
+.text-in:focus { border-color: var(--brand); outline: none; box-shadow: 0 0 0 3px var(--brand-soft); }
+
+.chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  padding: 7px 13px; border-radius: 99px;
+  border: 1px solid var(--line); background: var(--surface);
+  cursor: pointer; font-size: .8125rem;
+  display: inline-flex; align-items: center; gap: 7px;
+  transition: border-color .14s, background .14s;
+}
+.chip:hover { background: var(--surface-2); }
+.chip[aria-pressed="true"], .chip[aria-current="true"] { border-color: var(--brand); background: var(--brand-soft); color: var(--brand); font-weight: 550; }
+.chip .dot { inline-size: 12px; block-size: 12px; border-radius: 99px; border: 1px solid rgb(0 0 0 / .12); }
+
+.share-actions { display: grid; gap: 9px; margin-block-start: 6px; }
+.link-box {
+  display: flex; gap: 8px; align-items: center;
+  margin-block-start: 12px; padding: 10px 12px;
+  background: var(--surface-2); border-radius: var(--r);
+  border: 1px solid var(--line);
+}
+.link-box input {
+  flex: 1 1 auto; border: 0; background: none; font-size: .875rem;
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  min-inline-size: 0;
+}
+
+.avatar-row { display: flex; align-items: center; gap: 12px; }
+.avatar {
+  inline-size: 52px; block-size: 52px; border-radius: 99px;
+  background: var(--surface-2); border: 1px dashed var(--line);
+  display: grid; place-items: center; overflow: hidden; flex: none;
+  font-size: 1.25rem; color: var(--ink-faint);
+}
+.avatar img { inline-size: 100%; block-size: 100%; object-fit: cover; }
+
+/* card preview */
+.card-preview {
+  margin-block-start: 4px;
+  border-radius: var(--r);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  display: grid; place-items: center;
+  min-block-size: 180px;
+}
+.card-preview canvas { inline-size: 100%; block-size: auto; }
+
+/* --- places guide ------------------------------------------------------- */
+.filters {
+  display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  padding-block: 20px;
+  border-block-end: 1px solid var(--line);
+  margin-block-end: 28px;
+}
+.filters select {
+  padding: 9px 13px; border: 1px solid var(--line); border-radius: var(--r);
+  background: var(--surface); cursor: pointer;
+}
+
+.place-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 18px;
+}
+
+.place-card {
+  display: flex; flex-direction: column;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-lg); overflow: hidden;
+  text-decoration: none;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+.place-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-3); border-color: color-mix(in srgb, var(--brand) 25%, var(--line)); }
+.place-card .thumb {
+  aspect-ratio: 16 / 10; background: var(--surface-2);
+  display: grid; place-items: center; font-size: 2rem;
+  border-block-end: 1px solid var(--line-soft);
+}
+.place-card .thumb img { inline-size: 100%; block-size: 100%; object-fit: cover; }
+.place-card .body { padding: 15px 16px 17px; display: flex; flex-direction: column; gap: 8px; flex: 1 1 auto; }
+.place-card h3 { font-size: 1rem; }
+.place-card .sm { font-size: .875rem; color: var(--ink-soft); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.place-card .meta { display: flex; gap: 6px; flex-wrap: wrap; margin-block-start: auto; padding-block-start: 4px; }
+
+.place-hero { padding-block: 32px 24px; border-block-end: 1px solid var(--line); margin-block-end: 32px; }
+.place-hero .back { font-size: .875rem; text-decoration: none; color: var(--ink-soft); }
+.place-hero .back:hover { color: var(--brand); }
+.place-hero h1 { margin-block: 14px 8px; }
+.place-body { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 34px; align-items: start; padding-block-end: 64px; }
+@media (max-width: 860px) { .place-body { grid-template-columns: 1fr; } }
+
+.facts { display: grid; gap: 0; }
+.fact { display: flex; gap: 12px; padding-block: 12px; border-block-end: 1px solid var(--line-soft); font-size: .9375rem; }
+.fact:last-child { border-block-end: 0; }
+.fact dt { color: var(--ink-soft); flex: 0 0 40%; font-size: .875rem; }
+.fact dd { margin: 0; }
+
+.tips {
+  margin-block-start: 22px; padding: 18px 20px;
+  background: color-mix(in srgb, var(--warn) 7%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--warn) 22%, var(--line));
+  border-radius: var(--r);
+}
+.tips h3 { color: var(--warn); margin-block-end: 8px; font-size: .9375rem; }
+
+.prose p { margin-block-end: 14px; }
+.prose h2 { margin-block: 28px 12px; }
+
+/* A category colour behind the glyph, so a grid of cards reads as groups
+   before you read a word of it. --c is set inline per card. */
+.place-card .thumb { background: color-mix(in srgb, var(--c, var(--surface-2)) 14%, var(--surface-2)); }
+.place-card .where { font-size: .8125rem; color: var(--ink-faint); display: block; }
+.place-card .meta .dist { font-weight: 550; }
+
+.results-line { display: flex; gap: 10px 14px; flex-wrap: wrap; margin-block-end: 18px; font-size: .9375rem; }
+.near-note { color: var(--brand); }
+
+.place-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-block-start: 26px; }
+.related-band { padding-block-end: 64px; }
+.related-band h2 { margin-block-end: 16px; }
+
+/* --- ready-made plans --------------------------------------------------- */
+
+/* Three filter groups stacked rather than one long row. Length, who it is for
+   and budget are three different questions, and eleven chips in a single row
+   read as one question with eleven confusing answers. The fixed label column is
+   what makes them scan as a set; the empty label on the "clear" row keeps it
+   aligned with the two above it. */
+.plan-filters {
+  display: flex; flex-direction: column; gap: 14px;
+  padding-block: 20px;
+  border-block-end: 1px solid var(--line);
+  margin-block-end: 24px;
+}
+.filter-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.filter-group > .glabel {
+  flex: none; min-inline-size: 6.5rem;
+  font-size: .75rem; font-weight: 650; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--ink-faint);
+}
+@media (max-width: 640px) {
+  .filter-group { align-items: flex-start; }
+  .filter-group > .glabel { min-inline-size: 100%; }
+}
+
+/* The figure in the card's thumb is the plan's length: the one fact that decides
+   whether somebody can use the plan at all, and the first thing a grid of plans
+   is being scanned for. Brand-tinted rather than tinted by --c, because a plan
+   has no category and should not read as a kind of place. align-content is set
+   because two auto rows in a stretched grid would otherwise be pushed to
+   opposite ends of the box instead of sitting together in the middle. */
+.place-card .plan-thumb {
+  align-content: center;
+  gap: 4px;
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+.place-card .plan-thumb b { font-size: 2.1rem; font-weight: 700; line-height: 1; letter-spacing: -.02em; }
+.place-card .plan-thumb small { font-size: .75rem; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; opacity: .75; }
+
+.plan-route-wrap { display: flex; flex-direction: column; gap: 30px; }
+.plan-day-head {
+  font-size: .8125rem; font-weight: 650; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--ink-faint);
+  margin-block-end: 14px;
+}
+
+.plan-route { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+
+/* The connector is drawn on the stop rather than between siblings, so it runs
+   from one marker to the next and simply stops on the last one. 34px column,
+   so the line sits at 16.5px — half a pixel left of the marker's centre — and
+   inset-inline-start keeps it on the correct side when the page is RTL. */
+.plan-stop {
+  position: relative;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 0 14px;
+  align-items: start;
+  padding-block-end: 24px;
+}
+.plan-stop:last-child { padding-block-end: 0; }
+.plan-stop::before {
+  content: ""; position: absolute;
+  inset-block: 38px 0; inset-inline-start: 16.5px;
+  inline-size: 1px; background: var(--line);
+}
+.plan-stop:last-child::before { content: none; }
+
+.plan-num {
+  position: relative; z-index: 1;
+  inline-size: 34px; block-size: 34px; border-radius: 99px;
+  display: grid; place-items: center;
+  background: var(--brand-soft); color: var(--brand);
+  border: 1px solid color-mix(in srgb, var(--brand) 18%, transparent);
+  font-size: .8125rem; font-weight: 650;
+}
+
+.plan-stop-main { min-inline-size: 0; padding-block-start: 5px; }
+.plan-stop-main h3 { font-size: 1rem; margin-block-end: 4px; }
+.plan-stop-main h3 a { text-decoration: none; }
+.plan-stop-main h3 a:hover { color: var(--brand); text-decoration: underline; }
+.plan-sum,
+.plan-note { font-size: .875rem; color: var(--ink-soft); margin-block-end: 6px; }
+.plan-stop .meta { display: flex; gap: 6px; flex-wrap: wrap; }
+.plan-stop .meta .pill { margin-block-start: 0; }
+
+/* The editor's own sentence about when to be there — "arrive before 4pm". Set
+   apart from the pills below it, which are the place's recorded facts rather
+   than advice about this route. */
+.plan-time { font-size: .8125rem; font-weight: 550; color: var(--brand); margin-block-end: 6px; }
+
+/* A hand-written stop, or one whose place is no longer published: prose where
+   the others have a title and a link, so it reads as a line of the route rather
+   than as a broken card. */
+.plan-stop.is-text .plan-note { color: var(--ink); }
+
+.plan-stop > .trip-btn {
+  flex: none;
+  inline-size: 34px; block-size: 34px; padding: 0;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 1rem; line-height: 1;
+  color: var(--ink-soft);
+  transition: color .14s, border-color .14s, background .14s;
+}
+.plan-stop > .trip-btn:hover { color: var(--brand); border-color: color-mix(in srgb, var(--brand) 40%, var(--line)); }
+.plan-stop > .trip-btn[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--brand) 45%, var(--line));
+  background: var(--brand-soft);
+}
+
+.plan-actions {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 9px;
+  margin-block-start: 18px;
+}
+.plan-actions .btn { inline-size: 100%; justify-content: center; }
+.plan-actions .map-hint { margin: 0; }
+
+/* The closing band on the home page, for the visitor who is not going to mark
+   anything and would rather be handed a day. The heading and its button sit on
+   one row where there is room and stack where there is not, which is why the
+   head is a wrapping flex row rather than a grid — the button is the thing that
+   moves, and align-items: end keeps it on the heading's baseline while it does.
+   Same grid underneath as the plans page, so a card looks the same in both. */
+.plan-band { padding-block-end: 64px; }
+.plan-band-head {
+  display: flex; align-items: end; justify-content: space-between;
+  gap: 14px 24px; flex-wrap: wrap;
+  margin-block-end: 20px;
+}
+.plan-band-head h2 { margin: 0; }
+.plan-band-head .lede { margin: 6px 0 0; max-inline-size: 52ch; }
+
+/* --- my trip ------------------------------------------------------------ */
+
+/* The wrapper exists for one reason: the wishlist button cannot live inside the
+   card's link, so something has to hold both and give the button a box to be
+   positioned against. It is the grid item, and the card inside it stretches to
+   the row height so cards of different lengths still line up. */
+.card-cell { position: relative; display: flex; }
+.card-cell > .place-card { flex: 1 1 auto; inline-size: 100%; }
+
+.trip-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  cursor: pointer;
+}
+.card-cell > .trip-btn {
+  position: absolute; inset-block-start: 10px; inset-inline-end: 10px;
+  inline-size: 34px; block-size: 34px; padding: 0;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(6px);
+  box-shadow: var(--shadow-1);
+  font-size: 1rem; line-height: 1;
+  color: var(--ink-soft);
+  transition: color .14s, border-color .14s, background .14s;
+}
+.card-cell > .trip-btn:hover { color: var(--brand); border-color: color-mix(in srgb, var(--brand) 40%, var(--line)); }
+
+/* Pressed is the only state that carries meaning here, so it is the only one
+   that changes colour — a heart that is merely hovered must not look saved. */
+.trip-btn[aria-pressed="true"] { color: var(--brand); }
+.card-cell > .trip-btn[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--brand) 45%, var(--line));
+  background: var(--brand-soft);
+}
+
+/* The count beside the "My trip" link. Hidden until it is filled, so a first
+   visit shows no badge rather than a zero. */
+.nav-count {
+  display: inline-block; margin-inline-start: 6px;
+  min-inline-size: 18px; padding: 1px 6px; border-radius: 99px;
+  background: var(--brand); color: var(--brand-ink);
+  font-size: .6875rem; font-weight: 650; text-align: center;
+  line-height: 1.6;
+}
+
+.trip-head { display: grid; gap: 14px; margin-block-end: 22px; }
+.trip-figures { display: flex; gap: 34px; flex-wrap: wrap; }
+.trip-figure { display: flex; flex-direction: column; gap: 2px; }
+.trip-num { font-size: 1.75rem; font-weight: 650; letter-spacing: -0.02em; line-height: 1.1; }
+.trip-note { font-size: .875rem; margin: 0; }
+.trip-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 0; }
+
+.trip-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; counter-reset: none; }
+.trip-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+.trip-row .trip-n {
+  flex: 0 0 auto; inline-size: 24px;
+  color: var(--ink-faint); font-size: .875rem; font-variant-numeric: tabular-nums;
+}
+.trip-row .trip-ico {
+  flex: 0 0 auto; inline-size: 38px; block-size: 38px;
+  display: grid; place-items: center;
+  border-radius: var(--r-sm); font-size: 1.125rem;
+  background: color-mix(in srgb, var(--c, var(--surface-2)) 15%, var(--surface-2));
+}
+.trip-main { display: flex; flex-direction: column; gap: 2px; min-inline-size: 0; flex: 1 1 auto; }
+.trip-name { font-weight: 600; text-decoration: none; }
+a.trip-name:hover { color: var(--brand); }
+.trip-where { font-size: .8125rem; color: var(--ink-faint); }
+.trip-row-act { display: flex; gap: 6px; flex: 0 0 auto; }
+
+.trip-gone { margin-block-end: 22px; }
+.trip-gone-list { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+.trip-gone-row { display: flex; align-items: center; gap: 12px; font-size: .9375rem; }
+.trip-gone-row .trip-name { text-transform: capitalize; color: var(--ink-soft); }
+.trip-gone-row .trip-where { flex: 1 1 auto; }
+
+.trip-empty { margin-block-start: 4px; }
+.trip-device { color: var(--ink-faint); margin-block-start: 22px; }
+[data-trip-page] { padding-block-end: 64px; }
+
+@media (max-width: 560px) {
+  /* Laid out as a column, because five things across a 360px screen leaves the
+     place name about four characters wide. */
+  .trip-row { flex-wrap: wrap; }
+  .trip-main { flex-basis: calc(100% - 74px); }
+  .trip-row-act { margin-inline-start: 74px; }
+}
+
+/* --- visitor guide ------------------------------------------------------ */
+.guide-layout {
+  display: grid; grid-template-columns: 220px minmax(0, 1fr);
+  gap: 40px; align-items: start; padding-block-end: 64px;
+}
+.guide-toc { position: sticky; inset-block-start: 84px; font-size: .9375rem; }
+.guide-toc h2 {
+  font-size: .8125rem; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--ink-faint); margin-block-end: 10px;
+}
+.guide-toc ol { list-style: none; display: grid; gap: 2px; }
+.guide-toc a {
+  display: flex; gap: 8px; padding: 6px 8px;
+  border-radius: var(--r-sm); color: var(--ink-soft); text-decoration: none;
+}
+.guide-toc a:hover { background: var(--surface-2); color: var(--brand); }
+
+.guide-body { display: grid; gap: 40px; }
+.guide-sec > header h2 { display: flex; gap: 10px; align-items: baseline; font-size: 1.25rem; }
+.guide-sec > header .lede { margin-block: 8px 4px; }
+
+.guide-item { display: grid; gap: 4px; padding-block: 14px; border-block-start: 1px solid var(--line-soft); }
+.guide-item b { font-weight: 600; }
+.guide-item p { color: var(--ink-soft); font-size: .9375rem; }
+
+@media (max-width: 860px) {
+  .guide-layout { grid-template-columns: 1fr; gap: 26px; }
+  .guide-toc { position: static; }
+}
+
+/* --- shared map page ---------------------------------------------------- */
+.shared { max-width: 760px; margin-inline: auto; padding-block: 44px 72px; text-align: center; }
+.shared .card-holder {
+  margin-block: 26px 30px;
+  border-radius: var(--r-xl); overflow: hidden;
+  border: 1px solid var(--line); box-shadow: var(--shadow-3);
+  background: var(--surface);
+}
+.shared .card-holder img { inline-size: 100%; block-size: auto; }
+.shared .who { font-size: 1.6rem; font-weight: 650; letter-spacing: -0.02em; }
+
+.cta-band {
+  margin-block-start: 34px; padding: 26px;
+  border-radius: var(--r-lg);
+  background: var(--brand-soft);
+  border: 1px solid color-mix(in srgb, var(--brand) 20%, transparent);
+}
+.cta-band h2 { color: var(--brand); font-size: 1.25rem; }
+.cta-band p { color: var(--ink-soft); margin-block: 8px 16px; font-size: .9375rem; }
+
+/* --- footer ------------------------------------------------------------- */
+.foot { border-block-start: 1px solid var(--line); padding-block: 30px; margin-block-start: 40px; }
+.foot-in { max-width: var(--wrap); margin-inline: auto; padding-inline: 20px; }
+.foot-note { font-size: .875rem; color: var(--ink-soft); }
+.foot-meta { margin-block-start: 6px; font-size: .8125rem; color: var(--ink-faint); display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Contact and social links, shown only when an editor has filled them in. */
+.foot-links { margin-block-start: 10px; display: flex; gap: 14px; flex-wrap: wrap; font-size: .875rem; }
+.foot-links a { color: var(--brand); text-decoration: none; }
+.foot-links a:hover { text-decoration: underline; }
+
+/* --- toast -------------------------------------------------------------- */
+.toast {
+  position: fixed; inset-block-end: 24px; inset-inline: 0;
+  margin-inline: auto; inline-size: max-content; max-inline-size: calc(100vw - 40px);
+  padding: 11px 18px; border-radius: 99px;
+  background: var(--ink); color: var(--bg);
+  font-size: .875rem; font-weight: 500;
+  box-shadow: var(--shadow-3);
+  z-index: 200;
+  opacity: 0; transform: translateY(12px);
+  transition: opacity .2s ease, transform .2s ease;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: none; }
+.toast.err { background: #991b1b; color: #fff; }
+
+/* --- empty states ------------------------------------------------------- */
+.empty { padding: 40px 20px; text-align: center; color: var(--ink-faint); }
+
+/* --- print -------------------------------------------------------------- */
+@media print {
+  .topbar, .foot, .share-actions, .map-tools, .langsw, .theme-btn { display: none !important; }
+  body { background: #fff; }
+}

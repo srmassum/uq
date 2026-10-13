@@ -1,0 +1,712 @@
+/* ==========================================================================
+   Admin panel
+   --------------------------------------------------------------------------
+   Dark by default, and a light variant one attribute away. The panel is a
+   different product from the public site and gets its own sheet rather than
+   being forced into app.css, which is tuned for a cream travel page.
+
+   Logical properties throughout (inline-start, not left) so an Arabic admin —
+   if one ever exists — mirrors without a second stylesheet.
+   ========================================================================== */
+
+:root {
+  --ad-bg:      #0e1116;
+  --ad-bg-2:    #151a22;
+  --ad-bg-3:    #1c232d;
+  --ad-line:    #262f3b;
+  --ad-line-2:  #333e4d;
+  --ad-ink:     #e8edf4;
+  --ad-ink-2:   #9aa7b8;
+  --ad-ink-3:   #6b7889;
+  --ad-brand:   #c8375f;
+  --ad-brand-2: #8b1538;
+  --ad-ok:      #3fbf7f;
+  --ad-warn:    #e0a83c;
+  --ad-bad:     #e0576a;
+  --ad-info:    #4b9de0;
+
+  --ad-r:   10px;
+  --ad-r-2: 14px;
+  --ad-side: 246px;
+  --ad-font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ad-mono: ui-monospace, SFMono-Regular, "Cascadia Mono", Consolas, monospace;
+}
+
+[data-ad-theme="light"] {
+  --ad-bg:     #f5f6f8;
+  --ad-bg-2:   #ffffff;
+  --ad-bg-3:   #eef1f5;
+  --ad-line:   #dfe4ea;
+  --ad-line-2: #c9d1db;
+  --ad-ink:    #161b22;
+  --ad-ink-2:  #5a6675;
+  --ad-ink-3:  #8a96a4;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body.ad {
+  background: var(--ad-bg);
+  color: var(--ad-ink);
+  font: 15px/1.55 var(--ad-font);
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  min-block-size: 100vh;
+}
+
+a { color: var(--ad-brand); }
+
+.ad-skip {
+  position: absolute;
+  inset-inline-start: -9999px;
+}
+.ad-skip:focus {
+  inset-inline-start: 12px;
+  inset-block-start: 12px;
+  z-index: 40;
+  background: var(--ad-bg-2);
+  padding: 8px 12px;
+  border-radius: var(--ad-r);
+}
+
+.ad-sr {
+  position: absolute;
+  inline-size: 1px; block-size: 1px;
+  overflow: hidden; clip-path: inset(50%);
+}
+
+/* ------------------------------------------------------------------ sidebar */
+
+.ad-side {
+  inline-size: var(--ad-side);
+  flex: none;
+  background: var(--ad-bg-2);
+  border-inline-end: 1px solid var(--ad-line);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  inset-block-start: 0;
+  block-size: 100vh;
+  overflow-y: auto;
+}
+
+.ad-side-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 16px 16px 10px;
+}
+
+.ad-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--ad-ink);
+}
+.ad-brand-mark {
+  inline-size: 30px; block-size: 30px;
+  flex: none;
+  border-radius: 9px;
+  background: var(--ad-brand-2);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 15px;
+}
+.ad-brand b { display: block; font-size: 14.5px; letter-spacing: -0.01em; }
+.ad-brand i { display: block; font-size: 11.5px; color: var(--ad-ink-3); font-style: normal; }
+
+.ad-side-toggle {
+  display: none;
+  background: none;
+  border: 1px solid var(--ad-line);
+  color: var(--ad-ink-2);
+  border-radius: 8px;
+  font-size: 16px;
+  line-height: 1;
+  padding: 5px 9px;
+  cursor: pointer;
+}
+
+.ad-nav { padding: 4px 10px 20px; }
+.ad-nav-label {
+  margin: 16px 6px 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ad-ink-3);
+  font-weight: 650;
+}
+.ad-nav ul { list-style: none; margin: 0; padding: 0; }
+.ad-nav a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-radius: 8px;
+  color: var(--ad-ink-2);
+  text-decoration: none;
+  font-size: 14px;
+}
+.ad-nav a:hover { background: var(--ad-bg-3); color: var(--ad-ink); }
+.ad-nav a.on {
+  background: var(--ad-brand-2);
+  color: #fff;
+  font-weight: 600;
+}
+.ad-nav a.on .ad-pill { background: rgba(255,255,255,.22); color: #fff; }
+
+.ad-pill {
+  font-style: normal;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--ad-bg-3);
+  color: var(--ad-ink-3);
+  min-inline-size: 22px;
+  text-align: center;
+}
+.ad-pill.warn { background: rgba(224,168,60,.16); color: var(--ad-warn); }
+
+.ad-side-foot {
+  margin-block-start: auto;
+  padding: 14px 20px 18px;
+  border-block-start: 1px solid var(--ad-line);
+  font-size: 13.5px;
+}
+.ad-side-foot a { color: var(--ad-ink-3); text-decoration: none; }
+.ad-side-foot a:hover { color: var(--ad-ink); }
+
+/* --------------------------------------------------------------------- body */
+
+.ad-body {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ad-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 24px;
+  border-block-end: 1px solid var(--ad-line);
+  background: var(--ad-bg-2);
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 20;
+}
+.ad-top-who { display: flex; align-items: center; gap: 9px; font-size: 14px; }
+.ad-role {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--ad-ink-3);
+  border: 1px solid var(--ad-line-2);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+.ad-top-act { display: flex; gap: 8px; align-items: center; }
+.ad-inline { display: inline; margin: 0; }
+
+.ad-main {
+  flex: 1;
+  padding: 24px;
+  max-inline-size: 1400px;
+  inline-size: 100%;
+}
+
+.ad-foot {
+  padding: 16px 24px 26px;
+  color: var(--ad-ink-3);
+  font-size: 12.5px;
+  display: flex;
+  gap: 8px;
+}
+
+/* ------------------------------------------------------------------- header */
+
+.ad-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-block-end: 20px;
+}
+.ad-head h1 { font-size: 1.5rem; margin: 0; letter-spacing: -0.015em; }
+.ad-lede { color: var(--ad-ink-2); margin: 6px 0 0; max-inline-size: 78ch; font-size: 14px; }
+.ad-head-act { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.ad-panel {
+  background: var(--ad-bg-2);
+  border: 1px solid var(--ad-line);
+  border-radius: var(--ad-r-2);
+  padding: 18px 20px;
+  margin-block-end: 18px;
+}
+.ad-panel.narrow { max-inline-size: 620px; }
+.ad-panel > :first-child { margin-block-start: 0; }
+.ad-panel > :last-child { margin-block-end: 0; }
+.ad-panel h2 { font-size: 1.05rem; margin: 0 0 12px; }
+
+.ad-grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; }
+.ad-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+
+/* ------------------------------------------------------------------ buttons */
+
+.ad-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  border: 1px solid var(--ad-line-2);
+  background: var(--ad-bg-3);
+  color: var(--ad-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ad-btn:hover { border-color: var(--ad-ink-3); }
+.ad-btn.primary { background: var(--ad-brand-2); border-color: var(--ad-brand-2); color: #fff; font-weight: 600; }
+.ad-btn.primary:hover { background: var(--ad-brand); border-color: var(--ad-brand); }
+.ad-btn.ghost { background: transparent; }
+.ad-btn.danger { border-color: rgba(224,87,106,.5); color: var(--ad-bad); background: transparent; }
+.ad-btn.danger:hover { background: rgba(224,87,106,.12); }
+.ad-btn:disabled { opacity: .5; cursor: not-allowed; }
+.ad-spacer { flex: 1; }
+
+/* ------------------------------------------------------------------- stats */
+
+.ad-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+.ad-stat {
+  background: var(--ad-bg-2);
+  border: 1px solid var(--ad-line);
+  border-radius: var(--ad-r-2);
+  padding: 15px 16px;
+}
+.ad-stat b {
+  display: block;
+  font-size: 1.65rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.ad-stat span { color: var(--ad-ink-2); font-size: 13px; }
+.ad-stat.warn b { color: var(--ad-warn); }
+.ad-stat.good b { color: var(--ad-ok); }
+
+/* -------------------------------------------------------------------- table */
+
+.ad-tablewrap { overflow-x: auto; margin: 0 -20px; padding: 0 20px; }
+
+.ad-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.ad-table th {
+  text-align: start;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--ad-ink-3);
+  font-weight: 650;
+  padding: 0 12px 9px;
+  border-block-end: 1px solid var(--ad-line);
+  white-space: nowrap;
+}
+.ad-table td {
+  padding: 11px 12px;
+  border-block-end: 1px solid var(--ad-line);
+  vertical-align: middle;
+}
+.ad-table tbody tr:hover { background: var(--ad-bg-3); }
+.ad-table td.num, .ad-table th.num { text-align: end; font-variant-numeric: tabular-nums; }
+.ad-table .ad-check { inline-size: 34px; }
+.ad-rowlink { color: var(--ad-ink); text-decoration: none; font-weight: 550; }
+.ad-rowlink:hover { color: var(--ad-brand); text-decoration: underline; }
+.ad-sub { display: block; color: var(--ad-ink-3); font-size: 12.5px; }
+
+.ad-bulk {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-block-start: 14px;
+  padding-block-start: 14px;
+  border-block-start: 1px solid var(--ad-line);
+}
+.ad-muted { color: var(--ad-ink-3); font-size: 13px; }
+
+.ad-pager {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-block-start: 16px;
+}
+.ad-pager a, .ad-pager span {
+  padding: 5px 11px;
+  border-radius: 8px;
+  border: 1px solid var(--ad-line);
+  color: var(--ad-ink-2);
+  text-decoration: none;
+  font-size: 13.5px;
+}
+.ad-pager a:hover { border-color: var(--ad-ink-3); color: var(--ad-ink); }
+.ad-pager .on { background: var(--ad-brand-2); border-color: var(--ad-brand-2); color: #fff; font-weight: 650; }
+.ad-pager .ad-gap { border: none; color: var(--ad-ink-3); }
+
+/* -------------------------------------------------------------------- chips */
+
+.ad-chip {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--ad-bg-3);
+  color: var(--ad-ink-2);
+  white-space: nowrap;
+}
+.ad-chip.ok   { background: rgba(63,191,127,.15); color: var(--ad-ok); }
+.ad-chip.warn { background: rgba(224,168,60,.15); color: var(--ad-warn); }
+.ad-chip.bad  { background: rgba(224,87,106,.15); color: var(--ad-bad); }
+.ad-chip.info { background: rgba(75,157,224,.15); color: var(--ad-info); }
+.ad-chip.mute { background: var(--ad-bg-3); color: var(--ad-ink-3); }
+
+/* ------------------------------------------------------------------ notices */
+
+.ad-note {
+  border-radius: var(--ad-r);
+  padding: 11px 14px;
+  margin: 0 0 16px;
+  font-size: 14px;
+  border: 1px solid var(--ad-line-2);
+  background: var(--ad-bg-3);
+}
+.ad-note.info { border-color: rgba(75,157,224,.4);  background: rgba(75,157,224,.08); }
+.ad-note.warn { border-color: rgba(224,168,60,.4);  background: rgba(224,168,60,.08); }
+.ad-note.bad  { border-color: rgba(224,87,106,.4);  background: rgba(224,87,106,.08); }
+.ad-note.ok   { border-color: rgba(63,191,127,.4);  background: rgba(63,191,127,.08); }
+.ad-empty { color: var(--ad-ink-3); padding: 22px 0; text-align: center; }
+
+.ad-flash {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 16px;
+  border-radius: var(--ad-r);
+  margin-block-end: 18px;
+  background: rgba(63,191,127,.12);
+  border: 1px solid rgba(63,191,127,.4);
+  color: var(--ad-ink);
+  font-size: 14px;
+}
+.ad-flash.warn { background: rgba(224,168,60,.12); border-color: rgba(224,168,60,.45); }
+.ad-flash.bad  { background: rgba(224,87,106,.12); border-color: rgba(224,87,106,.45); }
+.ad-flash-x {
+  background: none; border: 0; color: var(--ad-ink-3);
+  font-size: 19px; line-height: 1; cursor: pointer; padding: 0 2px;
+}
+
+/* -------------------------------------------------------------------- forms */
+
+.ad-form-title { font-size: 1.05rem; margin: 0 0 4px; }
+.ad-form .ad-help { display: block; color: var(--ad-ink-3); font-size: 12.5px; margin: 0 0 12px; }
+
+.ad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px 16px;
+  margin-block-start: 12px;
+}
+.ad-field { display: flex; flex-direction: column; gap: 5px; min-inline-size: 0; }
+.ad-field.wide { grid-column: 1 / -1; }
+.ad-field > label { font-size: 13px; font-weight: 600; color: var(--ad-ink-2); }
+.ad-req { color: var(--ad-bad); }
+
+.ad-field input[type=text],
+.ad-field input[type=email],
+.ad-field input[type=url],
+.ad-field input[type=password],
+.ad-field input[type=number],
+.ad-field input[type=date],
+.ad-field input[type=search],
+.ad-field select,
+.ad-field textarea {
+  inline-size: 100%;
+  padding: 8px 11px;
+  border-radius: 9px;
+  border: 1px solid var(--ad-line-2);
+  background: var(--ad-bg);
+  color: var(--ad-ink);
+  font: inherit;
+  font-size: 14px;
+}
+.ad-field textarea { resize: vertical; line-height: 1.5; }
+.ad-field textarea.mono, .ad-field input.mono { font-family: var(--ad-mono); font-size: 13px; }
+.ad-field input:focus, .ad-field select:focus, .ad-field textarea:focus {
+  outline: 2px solid var(--ad-brand);
+  outline-offset: 1px;
+  border-color: var(--ad-brand);
+}
+.ad-field .err input, .ad-field .err textarea, .ad-field .err select { border-color: var(--ad-bad); }
+.ad-help { color: var(--ad-ink-3); font-size: 12.5px; }
+.ad-err { color: var(--ad-bad); font-size: 12.5px; font-weight: 600; }
+
+.ad-switch { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
+
+.ad-colorwrap { display: flex; gap: 8px; align-items: center; }
+.ad-colorwrap input[type=color] {
+  inline-size: 46px; block-size: 36px; padding: 2px;
+  border: 1px solid var(--ad-line-2); border-radius: 8px; background: var(--ad-bg);
+}
+.ad-colorwrap input[type=text] { flex: 1; }
+
+.ad-imgpick { display: flex; gap: 8px; }
+.ad-imgpick input { flex: 1; }
+.ad-thumb {
+  margin-block-start: 8px;
+  max-inline-size: 190px;
+  max-block-size: 130px;
+  border-radius: 9px;
+  border: 1px solid var(--ad-line-2);
+  object-fit: cover;
+}
+
+.ad-form-act {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-block-start: 20px;
+  padding-block-start: 18px;
+  border-block-start: 1px solid var(--ad-line);
+}
+
+.ad-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  margin-block-end: 16px;
+}
+.ad-filters label { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: var(--ad-ink-3); }
+.ad-filters input, .ad-filters select {
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--ad-line-2);
+  background: var(--ad-bg);
+  color: var(--ad-ink);
+  font: inherit;
+  font-size: 14px;
+  min-inline-size: 130px;
+}
+
+/* -------------------------------------------------------------------- login */
+
+body.ad-login {
+  display: grid;
+  place-items: center;
+  min-block-size: 100vh;
+  padding: 24px;
+}
+.ad-login-box {
+  inline-size: 100%;
+  max-inline-size: 400px;
+  background: var(--ad-bg-2);
+  border: 1px solid var(--ad-line);
+  border-radius: var(--ad-r-2);
+  padding: 26px 26px 22px;
+}
+.ad-login-box h1 { margin: 0 0 4px; font-size: 1.25rem; }
+.ad-login-box .ad-lede { margin-block-end: 18px; font-size: 13.5px; }
+.ad-login-box .ad-grid { grid-template-columns: 1fr; }
+.ad-login-foot { margin-block-start: 18px; font-size: 13px; color: var(--ad-ink-3); }
+
+/* The first-run page prints a file path that has to be typed out in full, so it
+   gets monospace and its own background rather than the browser's default code
+   styling. `.mono` on its own only reaches inputs and textareas. */
+.ad-login-box code {
+  font-family: var(--ad-mono);
+  font-size: 12.5px;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--ad-bg);
+  border: 1px solid var(--ad-line);
+}
+.ad-login-box .ad-note code { background: transparent; border: 0; padding: 0; }
+
+/* ------------------------------------------------------------------- pieces */
+
+.ad-bar {
+  block-size: 7px;
+  border-radius: 999px;
+  background: var(--ad-bg-3);
+  overflow: hidden;
+}
+.ad-bar > i { display: block; block-size: 100%; background: var(--ad-brand); border-radius: 999px; }
+
+.ad-kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 13.5px; margin: 0; }
+.ad-kv dt { color: var(--ad-ink-3); }
+.ad-kv dd { margin: 0; }
+
+.ad-list { list-style: none; margin: 0; padding: 0; }
+.ad-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-block-end: 1px solid var(--ad-line);
+  font-size: 14px;
+}
+.ad-list li:last-child { border-block-end: 0; }
+
+/* A small grid of images, for the media library and the picker. */
+.ad-media {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+.ad-media figure {
+  margin: 0;
+  border: 1px solid var(--ad-line);
+  border-radius: var(--ad-r);
+  overflow: hidden;
+  background: var(--ad-bg-3);
+}
+.ad-media img { inline-size: 100%; block-size: 116px; object-fit: cover; display: block; }
+.ad-media figcaption { padding: 7px 9px; font-size: 12px; color: var(--ad-ink-2); }
+.ad-media figcaption b { display: block; color: var(--ad-ink); font-size: 12.5px; }
+
+/* The pin picker on the place editor. */
+.ad-pin {
+  position: relative;
+  background: var(--ad-bg);
+  border: 1px solid var(--ad-line-2);
+  border-radius: var(--ad-r);
+  padding: 8px;
+  display: grid;
+  place-items: center;
+}
+.ad-pin svg { inline-size: 100%; block-size: auto; max-block-size: 420px; cursor: crosshair; }
+.ad-pin .ad-pin-dot { fill: var(--ad-brand); stroke: #fff; stroke-width: 2; }
+
+/* Modal, used by the image picker. */
+.ad-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(6,9,13,.72);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.ad-modal[hidden] { display: none; }
+.ad-modal-box {
+  background: var(--ad-bg-2);
+  border: 1px solid var(--ad-line-2);
+  border-radius: var(--ad-r-2);
+  inline-size: min(920px, 100%);
+  max-block-size: 82vh;
+  overflow: auto;
+  padding: 18px 20px;
+}
+.ad-modal-box h2 { margin: 0 0 14px; font-size: 1.05rem; }
+
+/* --------------------------------------------------------- itinerary stops */
+/*
+  The one table in the panel that is a form: every cell holds an input, the rows
+  are grouped by day, and the order of the rows IS the data. It needs its own
+  rules because .ad-field styles the form grid, and these inputs are not in it.
+*/
+
+.ad-stops td { vertical-align: top; }
+.ad-stops td input[type=text],
+.ad-stops td select {
+  inline-size: 100%;
+  padding: 6px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--ad-line-2);
+  background: var(--ad-bg);
+  color: var(--ad-ink);
+  font: inherit;
+  font-size: 13.5px;
+}
+.ad-stops td input[type=text]:focus,
+.ad-stops td select:focus {
+  outline: 2px solid var(--ad-brand);
+  outline-offset: 1px;
+  border-color: var(--ad-brand);
+}
+/* The English box sits above the Arabic one. The 100% width already forces the
+   wrap; the margin is what stops them touching. */
+.ad-stops td .ad-rtl { margin-block-start: 6px; }
+
+/* A day heading: a band across the whole row, so a long route still reads as
+   groups rather than as an undifferentiated column of boxes. */
+.ad-stops .ad-stopday td {
+  background: var(--ad-bg-3);
+  padding-block: 7px;
+  font-size: 13px;
+  border-block-end: 1px solid var(--ad-line);
+}
+.ad-stops .ad-stopday b { margin-inline-end: 8px; }
+.ad-stops .ad-stopday .ad-chip { margin-inline-start: 6px; }
+
+.ad-stophandle { inline-size: 78px; white-space: nowrap; }
+.ad-grip {
+  cursor: grab;
+  color: var(--ad-ink-3);
+  font-size: 15px;
+  padding-inline-end: 3px;
+  user-select: none;
+}
+.ad-grip:active { cursor: grabbing; }
+
+.ad-btn.ad-tiny { padding: 3px 7px; font-size: 11px; line-height: 1.2; }
+
+/* While a row is in the air. The drop target is not highlighted separately
+   because the row is moved into place as the pointer passes — the gap that
+   opens up is the indicator. */
+.ad-stops tr.dragging { opacity: .45; }
+.ad-stops tr.dragging td { background: var(--ad-bg-3); }
+
+/* --------------------------------------------------------------- responsive */
+
+@media (max-width: 900px) {
+  body.ad { flex-direction: column; }
+  .ad-side {
+    inline-size: 100%;
+    block-size: auto;
+    position: static;
+    border-inline-end: 0;
+    border-block-end: 1px solid var(--ad-line);
+  }
+  .ad-side-toggle { display: block; }
+  .ad-nav, .ad-side-foot { display: none; }
+  .ad-side.open .ad-nav, .ad-side.open .ad-side-foot { display: block; }
+  .ad-main { padding: 18px 14px; }
+  .ad-tablewrap { margin: 0 -14px; padding: 0 14px; }
+  .ad-top { padding: 10px 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
